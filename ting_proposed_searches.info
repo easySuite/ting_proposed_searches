@@ -1,0 +1,7 @@
+name = Ting Proposed Searches
+description = Return list of suggestions on 0 hits search result.
+core = 7.x
+package = Ding!
+dependencies[] = ting_search
+configure = admin/config/ting/proposed_searches
+stylesheets[all][] = css/ting_proposed_searches.css

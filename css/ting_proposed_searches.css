@@ -1,0 +1,16 @@
+.opensuggest-wrapper {
+  margin: 20px;
+}
+
+.opensuggest-wrapper ul {
+  list-style-type: none;
+  padding: 0;
+}
+.opensuggest-label {
+  font-weight: bold;
+  padding-bottom: 5px;
+}
+
+.opensuggest-link em {
+  background: yellow;
+}
