@@ -58,12 +58,12 @@ function ting_proposed_searches_make_item_list($items) {
   $links = array();
 
   // Make a list of suggesttions.
-  foreach ($items as $suggest) {
+  foreach ($items as $key => $suggest) {
     $zero_hit_link = array(
       '#theme' => 'link',
       '#path' => "search/ting/{$suggest}",
       '#weight' => 0,
-      '#text' => $suggest,
+      '#text' => $key,
       '#options' => array(
         'attributes' => array(
           'class' => array(
@@ -115,13 +115,12 @@ function ting_proposed_searches_make_item_list($items) {
  */
 function ting_proposed_searches_preprocess(&$variables, $hook) {
   if ($hook == "panels_pane" && $variables['pane']->type == 'search_result') {
-    $search_result = drupal_static('ting_search_results');
+    $search_result = &drupal_static('ting_search_results');
+    $settings = variable_get('ting_proposed_searches_settings', array());
+    $url = variable_get('ting_proposed_searches_rest_url', NULL);
 
-    if ($search_result->numTotalObjects == '0') {
+    if ($search_result->numTotalObjects == '0' && !empty($url)) {
       $search_arg = $variables['display']->args[0];
-      $settings = variable_get('ting_proposed_searches_settings', array());
-      $url = variable_get('ting_proposed_searches_rest_url', NULL);
-
       $value_vars = array();
       $value_vars['index'] = $settings['index'];
       $value_vars['facetIndex'] = $settings['facetIndex'];
@@ -139,7 +138,7 @@ function ting_proposed_searches_preprocess(&$variables, $hook) {
       $items = array();
       if (!empty($result->suggestions)) {
         foreach ($result->suggestions as $suggestion) {
-          $items[$suggestion->phrase] = $suggestion->phrase;
+          $items[$suggestion->phrase] = strip_tags($suggestion->phrase);
         }
         $link_items = ting_proposed_searches_make_item_list($items);
       }

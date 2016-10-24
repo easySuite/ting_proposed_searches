@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Install/uninstall handlers.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ting_proposed_searches_uninstall() {
+  variable_del('ting_proposed_searches_settings');
+  variable_del('ting_proposed_searches_rest_url');
+}
