@@ -76,15 +76,6 @@ function ting_proposed_searches_make_item_list($items) {
     $links[] = drupal_render($zero_hit_link);
   }
 
-  // Suggestion block wrapper.
-  $render['wrapper'] = array(
-    '#type' => 'html_tag',
-    '#tag' => 'div',
-    '#attributes' => array(
-      'class' => array('opensuggest-wrapper'),
-    ),
-  );
-
   // Label for suggestions.
   $render['label'] = array(
     '#type' => 'html_tag',
@@ -93,6 +84,7 @@ function ting_proposed_searches_make_item_list($items) {
     '#attributes' => array(
       'class' => array('opensuggest-label'),
     ),
+    '#prefix' => '<div class="opensuggest-wrapper">',
   );
 
   // Render array of suggestions.
@@ -103,6 +95,7 @@ function ting_proposed_searches_make_item_list($items) {
       'class' => array('links', 'opensuggest-links'),
     ),
     '#items' => $links,
+    '#suffix' => '</div>',
   );
 
   drupal_add_css(drupal_get_path('module', 'ting_proposed_searches') . '/css/ting_proposed_searches.css');
@@ -111,16 +104,16 @@ function ting_proposed_searches_make_item_list($items) {
 }
 
 /**
- * Implements hook_preprocess().
+ * Implements hook_panels_pane_content_alter().
  */
-function ting_proposed_searches_preprocess(&$variables, $hook) {
-  if ($hook == "panels_pane" && $variables['pane']->type == 'search_result') {
+function ting_proposed_searches_panels_pane_content_alter($content, $pane, $args, $contexts) {
+  if ($pane->type == 'search_result' && $content->delta == "result") {
     $search_result = &drupal_static('ting_search_results');
     $settings = variable_get('ting_proposed_searches_settings', array());
     $url = variable_get('ting_proposed_searches_rest_url', NULL);
 
     if ($search_result->numTotalObjects == '0' && !empty($url)) {
-      $search_arg = $variables['display']->args[0];
+      $search_arg = $args[0];
       $value_vars = array();
       $value_vars['index'] = $settings['index'];
       $value_vars['facetIndex'] = $settings['facetIndex'];
@@ -143,12 +136,12 @@ function ting_proposed_searches_preprocess(&$variables, $hook) {
         $link_items = ting_proposed_searches_make_item_list($items);
       }
 
-      $content = $variables['content'];
+      $new_content = $content->content;
       if (!empty($link_items)) {
-        $content .= render($link_items);
+        $new_content .= render($link_items);
       }
 
-      $variables['content'] = $content;
+      $content->content = $new_content;
     }
   }
 }
