@@ -1,14 +1,13 @@
 <?php
-
 /**
  * @file
  * Install/uninstall handlers.
  */
 
 /**
- * Implements hook_uninstall().
+ * Cleanup old variables.
  */
-function ting_proposed_searches_uninstall() {
+function ting_proposed_searches_update_7001() {
   variable_del('ting_proposed_searches_settings');
   variable_del('ting_proposed_searches_rest_url');
 }
