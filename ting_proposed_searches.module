@@ -1,8 +1,7 @@
 <?php
-
 /**
  * @file
- * Ting Proposed Search.
+ * Ting Proposed Search module logic.
  */
 
 /**
@@ -24,37 +23,14 @@ function ting_proposed_searches_menu() {
 }
 
 /**
- * Get settings, and merge with defaults.
+ * Creates renderable array of suggestions.
+ *
+ * @param $items
+ *   Suggested items.
  *
  * @return array
- *   Array of settings.
  */
-function ting_proposed_searches_settings() {
-  $base_settings['index'] = 'scanterm.default';
-  $base_settings['facetIndex'] = 'scanphrase.default';
-  $base_settings['filterQuery'] = NULL;
-
-  $base_settings['agency']  = variable_get('ting_agency', NULL);
-  $base_settings['profile'] = variable_get('ting_search_profile', NULL);
-  $base_settings['maxSuggestions'] = 10;
-  $base_settings['maxTime'] = 2000;
-
-  $base_settings['highlight'] = NULL;
-  $base_settings['highlight.pre'] = '<em>';
-  $base_settings['highlight.post'] = '</em>';
-
-  $defaults = variable_get('ting_proposed_searches_settings', array());
-
-  $settings = array();
-  $settings = array_merge($base_settings, $defaults);
-
-  return $settings;
-}
-
-/**
- * Forming result block.
- */
-function ting_proposed_searches_make_item_list($items) {
+function ting_proposed_searches_make_item_list(array $items) {
   $links = array();
 
   // Make a list of suggesttions.
@@ -105,43 +81,34 @@ function ting_proposed_searches_make_item_list($items) {
 
 /**
  * Implements hook_panels_pane_content_alter().
+ *
+ * Force insert proposed searches onto the search results page.
  */
 function ting_proposed_searches_panels_pane_content_alter($content, $pane, $args, $contexts) {
-  if ($pane->type == 'search_result' && $content->delta == "result") {
+  if ($pane->type == 'search_result' && $content->delta == 'result') {
     $search_result = &drupal_static('ting_search_results');
-    $settings = variable_get('ting_proposed_searches_settings', array());
-    $url = variable_get('ting_proposed_searches_rest_url', NULL);
 
-    if ($search_result->numTotalObjects == '0' && !empty($url)) {
+    if ($search_result->numTotalObjects == '0') {
       $search_arg = $args[0];
-      $value_vars = array();
-      $value_vars['index'] = $settings['index'];
-      $value_vars['facetIndex'] = $settings['facetIndex'];
-      $value_vars['agency'] = $settings['agency'];
-      $value_vars['profile'] = $settings['profile'];
-      $url = $url . '/facetSpell';
-      $settings['highlight'] = ($settings['highlight']) ? 'true' : NULL;
-      $options['query'] = array('query' => check_plain($search_arg)) + $value_vars + $settings;
-      $options['maxTime'] = 300;
-      $url = url($url, $options);
 
-      $request = drupal_http_request($url);
-      $result = json_decode($request->data);
+      module_load_include('inc', 'ting_search_autocomplete', 'includes/ting_search_autocomplete.ajax');
+      $suggestions = ting_search_autocomplete_get_suggestions($search_arg);
 
       $items = array();
-      if (!empty($result->suggestions)) {
-        foreach ($result->suggestions as $suggestion) {
-          $items[$suggestion->phrase] = strip_tags($suggestion->phrase);
+      if (!empty($suggestions)) {
+        foreach ($suggestions as $k => $suggestion) {
+          $items[$k] = $suggestion;
         }
+
         $link_items = ting_proposed_searches_make_item_list($items);
-      }
 
-      $new_content = $content->content;
-      if (!empty($link_items)) {
-        $new_content .= render($link_items);
-      }
+        $new_content = $content->content;
+        if (!empty($link_items)) {
+          $new_content .= render($link_items);
+        }
 
-      $content->content = $new_content;
+        $content->content = $new_content;
+      }
     }
   }
 }
