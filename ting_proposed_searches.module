@@ -5,24 +5,6 @@
  */
 
 /**
- * Implements hook_menu().
- */
-function ting_proposed_searches_menu() {
-  $items = array();
-
-  $items['admin/config/ting/proposed_searches'] = array(
-    'title' => 'Ting Proposed Searches config',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ting_proposed_searches_admin'),
-    'access callback' => TRUE,
-    'file' => 'ting_proposed_searches.admin.inc',
-    'type' => MENU_NORMAL_ITEM,
-  );
-
-  return $items;
-}
-
-/**
  * Creates renderable array of suggestions.
  *
  * @param $items
