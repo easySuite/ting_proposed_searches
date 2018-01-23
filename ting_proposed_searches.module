@@ -37,11 +37,8 @@ function ting_proposed_searches_make_item_list(array $items) {
   // Label for suggestions.
   $render['label'] = array(
     '#type' => 'html_tag',
-    '#tag' => 'div',
+    '#tag' => 'strong',
     '#value' => t('Did you mean:'),
-    '#attributes' => array(
-      'class' => array('opensuggest-label'),
-    ),
     '#prefix' => '<div class="opensuggest-wrapper">',
   );
 
