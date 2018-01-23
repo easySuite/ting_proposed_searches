@@ -2,5 +2,5 @@ name = Ting Proposed Searches
 description = Return list of suggestions on 0 hits search result.
 core = 7.x
 package = easyOPAC
-version = 7.x-3.1.0
+version = 7.x-4.0.2
 dependencies[] = ting_search_autocomplete
