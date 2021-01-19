@@ -13,45 +13,45 @@
  * @return array
  */
 function ting_proposed_searches_make_item_list(array $items) {
-  $links = array();
+  $links = [];
 
   // Make a list of suggesttions.
   foreach ($items as $key => $suggest) {
-    $zero_hit_link = array(
+    $zero_hit_link = [
       '#theme' => 'link',
       '#path' => "search/ting/{$suggest}",
       '#weight' => 0,
       '#text' => $key,
-      '#options' => array(
-        'attributes' => array(
-          'class' => array(
+      '#options' => [
+        'attributes' => [
+          'class' => [
             'opensuggest-link',
-          ),
-        ),
+          ],
+        ],
         'html' => TRUE,
-      ),
-    );
+      ],
+    ];
     $links[] = drupal_render($zero_hit_link);
   }
 
   // Label for suggestions.
-  $render['label'] = array(
+  $render['label'] = [
     '#type' => 'html_tag',
     '#tag' => 'strong',
     '#value' => t('Did you mean:'),
     '#prefix' => '<div class="opensuggest-wrapper">',
-  );
+  ];
 
   // Render array of suggestions.
-  $render['suggest_list'] = array(
+  $render['suggest_list'] = [
     '#theme' => 'item_list',
     '#type' => 'ul',
-    '#attributes' => array(
-      'class' => array('links', 'opensuggest-links'),
-    ),
+    '#attributes' => [
+      'class' => ['links', 'opensuggest-links'],
+    ],
     '#items' => $links,
     '#suffix' => '</div>',
-  );
+  ];
 
   drupal_add_css(drupal_get_path('module', 'ting_proposed_searches') . '/css/ting_proposed_searches.css');
 
@@ -67,12 +67,12 @@ function ting_proposed_searches_panels_pane_content_alter($content, $pane, $args
   if ($pane->type == 'search_result' && $content->delta == 'result') {
     $search_result = &drupal_static('ting_search_results');
 
-    if ($search_result->numTotalObjects == '0') {
+    if ($search_result->getNumTotalObjects() == 0) {
       $search_arg = $args[0];
 
       $suggestions = ting_proposed_searches_get_suggestions($search_arg);
 
-      $items = array();
+      $items = [];
       if (!empty($suggestions)) {
         foreach ($suggestions as $k => $suggestion) {
           $items[$k] = $suggestion;
@@ -95,38 +95,37 @@ function ting_proposed_searches_panels_pane_content_alter($content, $pane, $args
  * SuggestionService - retrieve suggestions with drupal_http_request()
  *
  * @param string $query
+ *
  * @return array
  */
 function ting_proposed_searches_get_suggestions($query) {
-  $items = array();
-  $rest_url = variable_get('ting_search_autocomplete_suggestion_url', '');
-  $method = 'facetSpell';
-  $settings = ting_search_autocomplete_settings();
+  $items = [];
+  $rest_url = variable_get('opensearch_search_autocomplete_suggestion_url', '');
 
-  // minimumString is not an openSuggestion parameter.
-  unset($settings['minimumString']);
+  $options = [
+    'q' => $query,
+    'type' => 'all',
+  ];
 
-  $rest_url = $rest_url . 'rest/' . $method;
-  $settings['query'] = $query;
-  $url = url($rest_url, array('query' => $settings));
+  $url = url($rest_url, ['query' => $options]);
 
-  $result = drupal_http_request($url, array(
-    'headers' => array(
+  $result = drupal_http_request($url, [
+    'headers' => [
       'Accept' => 'application/json',
-    ),
-  ));
+    ],
+  ]);
 
   if (!empty($result->data)) {
     $result_data = drupal_json_decode($result->data);
     if (empty($result->error)) {
-      if (!empty($result_data['suggestion'])) {
-        foreach ($result_data['suggestion'] as $suggestion) {
-          $items[truncate_utf8(strip_tags($suggestion['phrase']), 256, TRUE, FALSE, 1)] = $suggestion['phrase'];
+      if (!empty($result_data['response'])) {
+        foreach ($result_data['response']['docs'] as $suggestion) {
+          $items[truncate_utf8(strip_tags($suggestion['term']), 256, TRUE, FALSE, 1)] = $suggestion['term'];
         }
       }
     }
     else {
-      watchdog('ting_proposed_search', 'Search suggestions error: ' . $result->error . ' (' . $result->code . ")\nURL: $url" , array(), $severity = WATCHDOG_ERROR);
+      watchdog('ting_proposed_search', 'Search suggestions error: ' . $result->error . ' (' . $result->code . ")\nURL: $url", [], $severity = WATCHDOG_ERROR);
     }
   }
 

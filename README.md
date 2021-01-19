@@ -1,10 +1,9 @@
 ##Ting Proposed Searches
 ==========
-
-Module will add a list of autosuggestions if search results empty.
+Module will add a list of suggestions if search results empty.
 
 ## Requirements:
-ting_search_autocomplete module should be enabled and configured.
+For requesting suggestions this module uses Opensearch module.
 
 ## Configuration:
 
